@@ -13,6 +13,10 @@
           Adjust the filters you've selected and try again.
         </p>
       </div>
+      <PropertyCard
+        :title="'property card'"
+      >
+      </PropertyCard>
       <!-- <div
         v-for="item in currentData"
         :key="item.cartodb_id"
@@ -86,14 +90,14 @@
 </template>
 <script>
 import { mapState } from 'vuex';
-import ExpandCollapse from './ExpandCollapse.vue';
+import PropertyCard from './PropertyCard.vue';
 
 export default {
   components: {
-    ExpandCollapse,
+    PropertyCard,
   },
   computed: {
-    ...mapState([ 'sources' ]),
+    ...mapState([ 'markerSources' ]),
     currentData() {
       const locations = this.$store.state.currentData;
       // locations.sort((a, b) => a.organization_name.localeCompare(b.organization_name));
@@ -102,8 +106,16 @@ export default {
     currentDataList() {
       return this.currentData.map(row => row._featureId);
     },
+    // selectedResource() {
+    //   return this.$store.state.selectedResource;
+    // },
+    // selectedData() {
+    //   let currentData = this.currentData;
+    //   currentData.filter(cd => this.selectedResource.includes(cd._featureId))
+    //   return currentData;
+    // },
     dataStatus() {
-      return this.$store.state.sources[this.$appType].status;
+      return this.$store.state.markerSources[this.$appType].status;
     },
   },
   methods: {

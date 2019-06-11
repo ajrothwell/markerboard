@@ -50,9 +50,9 @@
             </section>
           </div>
           <div class="cell large-auto small-auto small-centered text-center">
-            <combo-search
+            <!-- <combo-search
               :dropdown="dropdownData"
-            />
+            /> -->
             <div class="search">
               <slot name="search" />
             </div>

@@ -1,12 +1,14 @@
 <template>
   <div class="cell medium-12 medium-cell-block-y mb-panel mb-panel-map map-height">
     <Map_
+      :class="{ 'mb-map-with-widget': this.$store.state.cyclomedia.active || this.$store.state.pictometry.active }"
       id="map-tag"
       :center="this.$store.state.map.center"
       :zoom="this.$store.state.map.zoom"
       zoom-control-position="bottomright"
       :min-zoom="11"
       :max-zoom="22"
+      @l-moveend="handleMapMove"
     >
       <!-- @l-click="handleMapClick" -->
       <esri-tiled-map-layer
@@ -23,13 +25,13 @@
         :z-index="tiledLayer.zIndex"
       />
 
-      <vector-marker
+      <!-- <vector-marker
         v-for="(marker) in markersForAddress"
         :key="marker.key"
         :latlng="marker.latlng"
         :marker-color="marker.color"
         :icon="marker.icon"
-      />
+      /> -->
 
       <!-- <vector-marker v-for="(marker) in this.$data.rows" -->
       <vector-marker
@@ -44,7 +46,44 @@
         }"
         @l-click="handleMarkerClick"
       />
+
+      <!-- marker using a png and ablility to rotate it -->
+      <png-marker v-if="this.cyclomediaActive"
+                  :icon="this.sitePath + 'images/camera.png'"
+                  :latlng="cycloLatlng"
+                  :rotationAngle="cycloRotationAngle"
+      />
+
+      <!-- marker using custom code extending icons - https://github.com/iatkin/leaflet-svgicon -->
+      <svg-view-cone-marker v-if="this.cyclomediaActive"
+                            :latlng="cycloLatlng"
+                            :rotationAngle="cycloRotationAngle"
+                            :hFov="cycloHFov"
+      />
+
+      <div v-once>
+        <cyclomedia-button v-if="this.shouldShowCyclomediaButton"
+                           v-once
+                           :position="'topright'"
+                           :link="'cyclomedia'"
+                           :imgSrc="this.sitePath + 'images/cyclomedia.png'"
+                           @click="handleCyclomediaButtonClick"
+        />
+      </div>
+
+      <cyclomedia-recording-circle v-for="recording in cyclomediaRecordings"
+                                   v-if="cyclomediaActive"
+                                   :key="recording.imageId"
+                                   :imageId="recording.imageId"
+                                   :latlng="[recording.lat, recording.lng]"
+                                   :size="1.2"
+                                   :color="'#3388ff'"
+                                   :weight="1"
+                                   @l-click="handleCyclomediaRecordingClick"
+      />
+
     </Map_>
+    <slot class='widget-slot' name="cycloWidget" />
   </div>
 </template>
 
@@ -54,12 +93,26 @@ import 'leaflet/dist/leaflet.css';
 import * as faMapping from '@philly/vue-mapping/src/fa';
 import Map_ from '@philly/vue-mapping/src/leaflet/Map.vue';
 
+import cyclomediaMixin from '@philly/vue-mapping/src/cyclomedia/map-panel-mixin.js';
+
+import CyclomediaButton from '@philly/vue-mapping/src/cyclomedia/Button.vue';
+import CyclomediaRecordingsClient from '@philly/vue-mapping/src/cyclomedia/recordings-client.js';
+
 export default {
+  name: 'MapPanel',
+  mixins: [
+    cyclomediaMixin,
+  ],
   components: {
     Map_,
     EsriTiledMapLayer: () => import(/* webpackChunkName: "pvm_EsriTiledMapLayer" */'@philly/vue-mapping/src/esri-leaflet/TiledMapLayer.vue'),
     VectorMarker: () => import(/* webpackChunkName: "mbmp_pvm_VectorMarker" */'@philly/vue-mapping/src/components/VectorMarker.vue'),
-  },
+    PngMarker: () => import(/* webpackChunkName: "mbmp_pvm_PngMarker" */'@philly/vue-mapping/src/components/PngMarker.vue'),
+    CyclomediaRecordingCircle: () => import(/* webpackChunkName: "mbmp_pvm_CyclomediaRecordingCircle" */'@philly/vue-mapping/src/cyclomedia/RecordingCircle.vue'),
+    SvgViewConeMarker: () => import(/* webpackChunkName: "mbmp_pvm_CyclomediaSvgViewConeMarker" */'@philly/vue-mapping/src/cyclomedia/SvgViewConeMarker.vue'),
+    CyclomediaButton,
+    CyclomediaRecordingsClient,
+},
   data() {
     const data = {
       rows: [],
@@ -137,6 +190,38 @@ export default {
       }
       return markers;
     },
+    cycloLatlng() {
+      if (this.$store.state.cyclomedia.orientation.xyz !== null) {
+        const xyz = this.$store.state.cyclomedia.orientation.xyz;
+        return [xyz[1], xyz[0]];
+      } else {
+        const center = this.$config.map.center;
+        return center;
+      }
+    },
+    cycloRotationAngle() {
+      return this.$store.state.cyclomedia.orientation.yaw * (180/3.14159265359);
+    },
+    cycloHFov() {
+      return this.$store.state.cyclomedia.orientation.hFov;
+    },
+    shouldShowCyclomediaButton() {
+      return this.$config.cyclomedia.enabled && !this.isMobileOrTablet;
+    },
+    picOrCycloActive() {
+      if (this.cyclomediaActive || this.pictometryActive) {
+        return true;
+      } else {
+        return false;
+      }
+    },
+    sitePath() {
+      if (process.env.VUE_APP_PUBLICPATH) {
+        return window.location.origin + process.env.VUE_APP_PUBLICPATH;
+      } else {
+        return ''
+      }
+    },
   },
   watch: {
     latestSelectedResourceFromExpand(nextLatestSelectedResource) {
@@ -151,6 +236,23 @@ export default {
         map.setView([ dataValue[0].lat, dataValue[0].lon ], geocodeZoom);
       }
     },
+    picOrCycloActive(value) {
+      this.$nextTick(() => {
+        this.$store.state.map.map.invalidateSize();
+      })
+    },
+  },
+  created() {
+    const cyclomediaConfig = this.$config.cyclomedia || {};
+    if (cyclomediaConfig.enabled) {
+    // create cyclomedia recordings client
+      this.$cyclomediaRecordingsClient = new CyclomediaRecordingsClient(
+        this.$config.cyclomedia.recordingsUrl,
+        this.$config.cyclomedia.username,
+        this.$config.cyclomedia.password,
+        4326
+      );
+    }
   },
   mounted() {
     window.addEventListener('resize', this.handleResize);
@@ -166,16 +268,49 @@ export default {
       const { target } = e;
       const { featureId } = target.options.data;
       // console.log('markerClick, featureId', featureId);
-      const selectedResource = [ ...this.selectedResources ];
+      let selectedResource = [ ...this.selectedResources ];
       if (selectedResource.includes(featureId)) {
         selectedResource.splice(selectedResource.indexOf(featureId), 1);
       } else {
-        selectedResource.push(featureId);
+        if (this.$config.selectedMarkers) {
+          if (this.$config.selectedMarkers.max === 1) {
+            selectedResource = [featureId];
+          } else {
+            selectedResource.push(featureId);
+          }
+        } else {
+          selectedResource.push(featureId);
+        }
       }
       this.$store.commit('setSelectedResources', selectedResource);
     },
     handleResize(event) {
       this.$store.state.map.map.invalidateSize();
+    },
+    handleMapMove(e) {
+      const map = this.$store.state.map.map;
+
+      const pictometryConfig = this.$config.pictometry || {};
+
+      const center = map.getCenter();
+      const { lat, lng } = center;
+      const coords = [lng, lat];
+
+      if (pictometryConfig.enabled) {
+        // update state for pictometry
+        this.$store.commit('setPictometryMapCenter', coords);
+
+        const zoom = map.getZoom();
+        this.$store.commit('setPictometryMapZoom', zoom);
+      }
+
+      const cyclomediaConfig = this.$config.cyclomedia || {};
+
+      if (cyclomediaConfig.enabled) {
+        // update cyclo recordings
+        this.updateCyclomediaRecordings();
+        this.$store.commit('setCyclomediaLatLngFromMap', [lat, lng]);
+      }
     },
   },
 };
@@ -186,5 +321,9 @@ export default {
   .map-container{
     min-height: 100vh !important;
   }
+}
+
+.mb-map-with-widget {
+  height: 50%;
 }
 </style>

@@ -58,7 +58,13 @@
         />
         <MapPanel
           v-show="!isMapVisible || isLarge"
-        />
+        >
+          <cyclomedia-widget v-if="this.shouldLoadCyclomediaWidget"
+                             slot="cycloWidget"
+                             v-show="cyclomediaActive"
+                             screen-percent="2"
+          />
+        </MapPanel>
       </div>
     </div>
 
@@ -98,6 +104,7 @@ export default {
     // RefinePanel,
     LocationsPanel,
     MapPanel,
+    CyclomediaWidget: () => import(/* webpackChunkName: "mbmb_pvm_CyclomediaWidget" */'@philly/vue-mapping/src/cyclomedia/Widget.vue'),
   },
   data() {
     return {
@@ -128,11 +135,35 @@ export default {
       return this.$store.state.selectedServices;
     },
     dataStatus() {
-      return this.$store.state.sources[this.$appType].status;
+      return this.$store.state.markerSources[this.$appType].status;
     },
     database() {
-      return this.$store.state.sources[this.$appType].data;
+      return this.$store.state.markerSources[this.$appType].data;
     },
+    shouldLoadCyclomediaWidget() {
+      return this.$config.cyclomedia.enabled && !this.isMobileOrTablet;
+    },
+    cyclomediaActive() {
+      return this.$store.state.cyclomedia.active
+    },
+    cycloLatlng() {
+      if (this.$store.state.cyclomedia.orientation.xyz !== null) {
+        const xyz = this.$store.state.cyclomedia.orientation.xyz;
+        return [xyz[1], xyz[0]];
+      } else {
+        const center = this.$config.map.center;
+        return center;
+      }
+    },
+    cycloRotationAngle() {
+      return this.$store.state.cyclomedia.orientation.yaw * (180/3.14159265359);
+    },
+    cycloHFov() {
+      return this.$store.state.cyclomedia.orientation.hFov;
+    },
+    selectedResources() {
+      return this.$store.state.selectedResources;
+    }
   },
   watch: {
     geocodeStatus(nextGeocodeStatus) {
@@ -142,16 +173,20 @@ export default {
         this.$data.buffer = null;
       }
     },
+    selectedResources(nextSelectedResources) {
+      console.log('watch selectedResources is firing');
+      this.getSelectedData(nextSelectedResources);
+    },
     // buffer() {
     //   this.filterPoints();
     // },
     // selectedServices() {
-    //   if (this.$store.state.sources[this.$appType].data) {
+    //   if (this.$store.state.markerSources[this.$appType].data) {
     //     this.filterPoints();
     //   }
     // },
     // selectedKeywords() {
-    //   if (this.$store.state.sources[this.$appType].data) {
+    //   if (this.$store.state.markerSources[this.$appType].data) {
     //     this.filterPoints();
     //   }
     // },
@@ -163,8 +198,8 @@ export default {
   },
   mounted() {
     console.log('in App.vue mounted, this.$config:', this.$config);
-    if (this.$config.dataSources) {
-      this.$controller.dataManager.fetchData();
+    if (this.$config.markerSources) {
+      this.$controller.dataManager.fetchData('markers');
     }
     this.$controller.appDidLoad();
     this.onResize();
@@ -179,8 +214,8 @@ export default {
   methods: {
     init() {
       console.log('in App.vue mounted, this.$config:', this.$config);
-      if (this.$config.dataSources) {
-        this.$controller.dataManager.fetchData();
+      if (this.$config.markerSources) {
+        this.$controller.dataManager.fetchData('markers');
       }
       this.onResize();
     },
@@ -191,7 +226,7 @@ export default {
     },
     filterPoints() {
       console.log('App.vue filterPoints is running');
-      const filteredRows = this.database.slice(0,10);
+      const filteredRows = this.database.slice(0,100);
       // const filteredRows = [];
     //
       // for (const row of this.database) {
@@ -263,6 +298,14 @@ export default {
         this.$data.isLarge = false;
       }
     },
+    getSelectedData(selectedResources) {
+      console.log('getSelectedData is running, selectedResources:', selectedResources);
+      let currentData = this.$store.state.currentData;
+      let currentSelectedData;
+      currentSelectedData = currentData.filter(cd => selectedResources.includes(cd._featureId))
+      this.$store.commit('setCurrentSelectedData', currentSelectedData);
+      this.$controller.handleSearchFormSubmit(currentSelectedData[0].StreetAddress, 'Address');
+    }
   },
 };
 </script>

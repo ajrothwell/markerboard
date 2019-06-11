@@ -6,35 +6,25 @@
 // if that is not needed, we can move this info to main.js
 
 // data-sources
-import immigrant from './data-sources/immigrant';
+import immigrant from './marker-sources/immigrant';
+import opa from './data-sources/opa';
 
 export default {
-  dataSources: {
+  markerSources: {
     immigrant,
   },
   router: {
-    enabled: true,
-    firstRouteParameter: [
-      {
-        address(state) {
-          return state.geocode.data;
-        },
-      },
-      {
-        keywords(state) {
-          return state.selectedKeywords;
-        },
-      },
-    ],
-    secondRouteParameter: {
-      selectedResources(state) {
-        return state.selectedResources;
-      },
-    },
+    enabled: false,
+  },
+  selectedMarkers: {
+    max: 1,
+  },
+  dataSources: {
+    opa,
   },
   app: {
-    title: 'Immigrant resource finder',
-    tagLine: 'Find resources for immigrants in the City',
+    title: 'Sheriff Sale Properties',
+    tagLine: 'Find properties for sale',
   },
   geocoder: {
     url(input) {
@@ -44,6 +34,26 @@ export default {
     params: {
       gatekeeperKey: process.env.VUE_APP_GATEKEEPER_KEY,
       include_units: true,
+    },
+  },
+  parcels: {
+    pwd: {
+      multipleAllowed: false,
+      geocodeFailAttemptParcel: null,
+      clearStateOnError: false,
+      wipeOutOtherParcelsOnReverseGeocodeOnly: true,
+      geocodeField: 'PARCELID',
+      parcelIdInGeocoder: 'pwd_parcel_id',
+      getByLatLngIfIdFails: false
+    },
+    dor: {
+      multipleAllowed: true,
+      geocodeFailAttemptParcel: 'pwd',
+      clearStateOnError: true,
+      wipeOutOtherParcelsOnReverseGeocodeOnly: false,
+      geocodeField: 'MAPREG',
+      parcelIdInGeocoder: 'dor_parcel_id',
+      getByLatLngIfIdFails: true
     },
   },
   cyclomedia: {
@@ -73,6 +83,15 @@ export default {
       cityBasemapLabels: {
         url: '//tiles.arcgis.com/tiles/fLeGjb7u4uXqeF9q/arcgis/rest/services/CityBasemap_Labels/MapServer',
         zIndex: '3',
+      },
+    },
+    featureLayers: {
+      dorParcels: {
+        url: '//services.arcgis.com/fLeGjb7u4uXqeF9q/ArcGIS/rest/services/DOR_Parcel/FeatureServer/0',
+      },
+      pwdParcels: {
+        url: '//services.arcgis.com/fLeGjb7u4uXqeF9q/ArcGIS/rest/services/PWD_PARCELS/FeatureServer/0',
+        // url: '//gis.phila.gov/arcgis/rest/services/Water/pv_data_geodb2/MapServer/0',
       },
     },
   },
