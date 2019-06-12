@@ -6,12 +6,12 @@
 // if that is not needed, we can move this info to main.js
 
 // data-sources
-import immigrant from './marker-sources/immigrant';
+import sheriffSales from './marker-sources/sheriff-sales';
 import opa from './data-sources/opa';
 
 export default {
   markerSources: {
-    immigrant,
+    sheriffSales,
   },
   router: {
     enabled: false,
@@ -44,7 +44,7 @@ export default {
       wipeOutOtherParcelsOnReverseGeocodeOnly: true,
       geocodeField: 'PARCELID',
       parcelIdInGeocoder: 'pwd_parcel_id',
-      getByLatLngIfIdFails: false
+      getByLatLngIfIdFails: false,
     },
     dor: {
       multipleAllowed: true,
@@ -53,7 +53,7 @@ export default {
       wipeOutOtherParcelsOnReverseGeocodeOnly: false,
       geocodeField: 'MAPREG',
       parcelIdInGeocoder: 'dor_parcel_id',
-      getByLatLngIfIdFails: true
+      getByLatLngIfIdFails: true,
     },
   },
   cyclomedia: {

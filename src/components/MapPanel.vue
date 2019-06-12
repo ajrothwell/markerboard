@@ -1,8 +1,8 @@
 <template>
   <div class="cell medium-12 medium-cell-block-y mb-panel mb-panel-map map-height">
     <Map_
-      :class="{ 'mb-map-with-widget': this.$store.state.cyclomedia.active || this.$store.state.pictometry.active }"
       id="map-tag"
+      :class="{ 'mb-map-with-widget': this.$store.state.cyclomedia.active || this.$store.state.pictometry.active }"
       :center="this.$store.state.map.center"
       :zoom="this.$store.state.map.zoom"
       zoom-control-position="bottomright"
@@ -48,46 +48,54 @@
       />
 
       <!-- marker using a png and ablility to rotate it -->
-      <png-marker v-if="this.cyclomediaActive"
-                  :icon="this.sitePath + 'images/camera.png'"
-                  :latlng="cycloLatlng"
-                  :rotationAngle="cycloRotationAngle"
+      <png-marker
+        v-if="cyclomediaActive"
+        :icon="sitePath + 'images/camera.png'"
+        :latlng="cycloLatlng"
+        :rotation-angle="cycloRotationAngle"
       />
 
       <!-- marker using custom code extending icons - https://github.com/iatkin/leaflet-svgicon -->
-      <svg-view-cone-marker v-if="this.cyclomediaActive"
-                            :latlng="cycloLatlng"
-                            :rotationAngle="cycloRotationAngle"
-                            :hFov="cycloHFov"
+      <svg-view-cone-marker
+        v-if="cyclomediaActive"
+        :latlng="cycloLatlng"
+        :rotation-angle="cycloRotationAngle"
+        :h-fov="cycloHFov"
       />
 
       <div v-once>
-        <cyclomedia-button v-if="this.shouldShowCyclomediaButton"
-                           v-once
-                           :position="'topright'"
-                           :link="'cyclomedia'"
-                           :imgSrc="this.sitePath + 'images/cyclomedia.png'"
-                           @click="handleCyclomediaButtonClick"
+        <cyclomedia-button
+          v-if="shouldShowCyclomediaButton"
+          v-once
+          :position="'topright'"
+          :link="'cyclomedia'"
+          :img-src="sitePath + 'images/cyclomedia.png'"
+          @click="handleCyclomediaButtonClick"
         />
       </div>
 
-      <cyclomedia-recording-circle v-for="recording in cyclomediaRecordings"
-                                   v-if="cyclomediaActive"
-                                   :key="recording.imageId"
-                                   :imageId="recording.imageId"
-                                   :latlng="[recording.lat, recording.lng]"
-                                   :size="1.2"
-                                   :color="'#3388ff'"
-                                   :weight="1"
-                                   @l-click="handleCyclomediaRecordingClick"
+      <cyclomedia-recording-circle
+        v-for="recording in cyclomediaRecordings"
+        v-if="cyclomediaActive"
+        :key="recording.imageId"
+        :image-id="recording.imageId"
+        :latlng="[recording.lat, recording.lng]"
+        :size="1.2"
+        :color="'#3388ff'"
+        :weight="1"
+        @l-click="handleCyclomediaRecordingClick"
       />
-
     </Map_>
-    <slot class='widget-slot' name="cycloWidget" />
+    <slot
+      class="widget-slot"
+      name="cycloWidget"
+    />
   </div>
 </template>
 
 <script>
+/* eslint-disable */
+/* eslint-disable vue/no-use-v-if-with-v-for */
 import 'leaflet/dist/leaflet.css';
 // import all fontawesome icons included in phila-vue-mapping
 import * as faMapping from '@philly/vue-mapping/src/fa';
@@ -100,9 +108,6 @@ import CyclomediaRecordingsClient from '@philly/vue-mapping/src/cyclomedia/recor
 
 export default {
   name: 'MapPanel',
-  mixins: [
-    cyclomediaMixin,
-  ],
   components: {
     Map_,
     EsriTiledMapLayer: () => import(/* webpackChunkName: "pvm_EsriTiledMapLayer" */'@philly/vue-mapping/src/esri-leaflet/TiledMapLayer.vue'),
@@ -112,7 +117,10 @@ export default {
     SvgViewConeMarker: () => import(/* webpackChunkName: "mbmp_pvm_CyclomediaSvgViewConeMarker" */'@philly/vue-mapping/src/cyclomedia/SvgViewConeMarker.vue'),
     CyclomediaButton,
     CyclomediaRecordingsClient,
-},
+  },
+  mixins: [
+    cyclomediaMixin,
+  ],
   data() {
     const data = {
       rows: [],
@@ -193,11 +201,11 @@ export default {
     cycloLatlng() {
       if (this.$store.state.cyclomedia.orientation.xyz !== null) {
         const xyz = this.$store.state.cyclomedia.orientation.xyz;
-        return [xyz[1], xyz[0]];
-      } else {
-        const center = this.$config.map.center;
-        return center;
-      }
+        return [ xyz[1], xyz[0] ];
+      } 
+      const center = this.$config.map.center;
+      return center;
+      
     },
     cycloRotationAngle() {
       return this.$store.state.cyclomedia.orientation.yaw * (180/3.14159265359);
@@ -211,16 +219,16 @@ export default {
     picOrCycloActive() {
       if (this.cyclomediaActive || this.pictometryActive) {
         return true;
-      } else {
-        return false;
-      }
+      } 
+      return false;
+      
     },
     sitePath() {
       if (process.env.VUE_APP_PUBLICPATH) {
         return window.location.origin + process.env.VUE_APP_PUBLICPATH;
-      } else {
-        return ''
-      }
+      } 
+      return '';
+      
     },
   },
   watch: {
@@ -239,7 +247,7 @@ export default {
     picOrCycloActive(value) {
       this.$nextTick(() => {
         this.$store.state.map.map.invalidateSize();
-      })
+      });
     },
   },
   created() {
@@ -274,7 +282,7 @@ export default {
       } else {
         if (this.$config.selectedMarkers) {
           if (this.$config.selectedMarkers.max === 1) {
-            selectedResource = [featureId];
+            selectedResource = [ featureId ];
           } else {
             selectedResource.push(featureId);
           }
@@ -294,7 +302,7 @@ export default {
 
       const center = map.getCenter();
       const { lat, lng } = center;
-      const coords = [lng, lat];
+      const coords = [ lng, lat ];
 
       if (pictometryConfig.enabled) {
         // update state for pictometry
@@ -309,7 +317,7 @@ export default {
       if (cyclomediaConfig.enabled) {
         // update cyclo recordings
         this.updateCyclomediaRecordings();
-        this.$store.commit('setCyclomediaLatLngFromMap', [lat, lng]);
+        this.$store.commit('setCyclomediaLatLngFromMap', [ lat, lng ]);
       }
     },
   },

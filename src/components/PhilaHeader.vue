@@ -94,9 +94,6 @@ import Logo from '@/assets/city-of-philadelphia-logo.png';
 // import '@philly/vue-comps'
 
 export default {
-  components: {
-    ComboSearch: () => import(/* webpackChunkName: "pvc_ComboSearch" */'@philly/vue-comps/src/components/ComboSearch.vue'),
-  },
   props: {
     appLink: {
       type: String,

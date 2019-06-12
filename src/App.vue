@@ -59,10 +59,11 @@
         <MapPanel
           v-show="!isMapVisible || isLarge"
         >
-          <cyclomedia-widget v-if="this.shouldLoadCyclomediaWidget"
-                             slot="cycloWidget"
-                             v-show="cyclomediaActive"
-                             screen-percent="2"
+          <cyclomedia-widget
+            v-if="this.shouldLoadCyclomediaWidget"
+            v-show="cyclomediaActive"
+            slot="cycloWidget"
+            screen-percent="2"
           />
         </MapPanel>
       </div>
@@ -144,16 +145,16 @@ export default {
       return this.$config.cyclomedia.enabled && !this.isMobileOrTablet;
     },
     cyclomediaActive() {
-      return this.$store.state.cyclomedia.active
+      return this.$store.state.cyclomedia.active;
     },
     cycloLatlng() {
       if (this.$store.state.cyclomedia.orientation.xyz !== null) {
         const xyz = this.$store.state.cyclomedia.orientation.xyz;
-        return [xyz[1], xyz[0]];
-      } else {
-        const center = this.$config.map.center;
-        return center;
-      }
+        return [ xyz[1], xyz[0] ];
+      } 
+      const center = this.$config.map.center;
+      return center;
+      
     },
     cycloRotationAngle() {
       return this.$store.state.cyclomedia.orientation.yaw * (180/3.14159265359);
@@ -163,7 +164,7 @@ export default {
     },
     selectedResources() {
       return this.$store.state.selectedResources;
-    }
+    },
   },
   watch: {
     geocodeStatus(nextGeocodeStatus) {
@@ -228,42 +229,42 @@ export default {
       console.log('App.vue filterPoints is running');
       const filteredRows = this.database.slice(0,100);
       // const filteredRows = [];
-    //
+      //
       // for (const row of this.database) {
-    //     let booleanServices;
-    //     const servicesSplit = row.services_offered.split(',');
-    //     const { selectedServices } = this.$store.state;
-    //     if (selectedServices.length === 0) {
-    //       booleanServices = true;
-    //     } else {
-    //       const servicesFiltered = servicesSplit.filter(f => selectedServices.includes(f));
-    //       booleanServices = servicesFiltered.length > 0;
-    //     }
-    //
-    //     let booleanBuffer = false;
-    //     if (!this.$data.buffer) {
-    //       booleanBuffer = true;
-    //     } else if (typeof row.lon === 'number' && row.lon !== null) {
-    //       const rowPoint = point([ row['y-lat'], row['x-lat'] ]);
-    //       if (booleanPointInPolygon(rowPoint, this.$data.buffer)) {
-    //         booleanBuffer = true;
-    //       }
-    //     }
-    //
-    //     let booleanKeywords = true;
-    //     if (this.selectedKeywords.length > 0) {
-    //       booleanKeywords = false;
-    //       const description = row.description.split(/,| /);
-    //       const keywordsFiltered = this.selectedKeywords.filter(f => description.includes(f));
-    //       if (keywordsFiltered.length > 0) {
-    //         booleanKeywords = true;
-    //       }
-    //     }
-    //
-    //     if (booleanServices && booleanBuffer && booleanKeywords) {
-    //       filteredRows.push(row);
-    //     }
-    //   }
+      //     let booleanServices;
+      //     const servicesSplit = row.services_offered.split(',');
+      //     const { selectedServices } = this.$store.state;
+      //     if (selectedServices.length === 0) {
+      //       booleanServices = true;
+      //     } else {
+      //       const servicesFiltered = servicesSplit.filter(f => selectedServices.includes(f));
+      //       booleanServices = servicesFiltered.length > 0;
+      //     }
+      //
+      //     let booleanBuffer = false;
+      //     if (!this.$data.buffer) {
+      //       booleanBuffer = true;
+      //     } else if (typeof row.lon === 'number' && row.lon !== null) {
+      //       const rowPoint = point([ row['y-lat'], row['x-lat'] ]);
+      //       if (booleanPointInPolygon(rowPoint, this.$data.buffer)) {
+      //         booleanBuffer = true;
+      //       }
+      //     }
+      //
+      //     let booleanKeywords = true;
+      //     if (this.selectedKeywords.length > 0) {
+      //       booleanKeywords = false;
+      //       const description = row.description.split(/,| /);
+      //       const keywordsFiltered = this.selectedKeywords.filter(f => description.includes(f));
+      //       if (keywordsFiltered.length > 0) {
+      //         booleanKeywords = true;
+      //       }
+      //     }
+      //
+      //     if (booleanServices && booleanBuffer && booleanKeywords) {
+      //       filteredRows.push(row);
+      //     }
+      //   }
       this.$store.commit('setCurrentData', filteredRows);
     },
     toggleMap() {
@@ -302,10 +303,10 @@ export default {
       console.log('getSelectedData is running, selectedResources:', selectedResources);
       let currentData = this.$store.state.currentData;
       let currentSelectedData;
-      currentSelectedData = currentData.filter(cd => selectedResources.includes(cd._featureId))
+      currentSelectedData = currentData.filter(cd => selectedResources.includes(cd._featureId));
       this.$store.commit('setCurrentSelectedData', currentSelectedData);
       this.$controller.handleSearchFormSubmit(currentSelectedData[0].StreetAddress, 'Address');
-    }
+    },
   },
 };
 </script>

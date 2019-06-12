@@ -15,8 +15,7 @@
       </div>
       <PropertyCard
         :title="'property card'"
-      >
-      </PropertyCard>
+      />
       <!-- <div
         v-for="item in currentData"
         :key="item.cartodb_id"

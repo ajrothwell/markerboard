@@ -41,7 +41,7 @@ Vue.component('font-awesome-icon', FontAwesomeIcon);
 Vue.config.productionTip = false;
 
 /* Change this depending on value in $store.state.sources */
-Vue.prototype.$appType = 'immigrant';
+Vue.prototype.$appType = 'sheriffSales';
 
 new Vue({
   router,

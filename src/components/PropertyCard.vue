@@ -18,13 +18,12 @@
     <span>Area: </span><span>{{ opaData.total_area }} ft</span><br>
     <span>Description: </span><span>{{ opaData.building_code_description }}</span><br>
     <span>Zoning Description: </span><span>{{ this.zoning }}</span><br>
-    
   </div>
 </template>
 <script>
 import TopicComponent from '@philly/vue-comps/src/components/TopicComponent.vue';
 import helpers from '../util/helpers.js';
-console.log('in PropertyCard, helpers:', helpers)
+console.log('in PropertyCard, helpers:', helpers);
 
 export default {
   mixins: [ TopicComponent ],
@@ -49,27 +48,27 @@ export default {
     currentSelectedData() {
       if (this.$store.state.currentSelectedData) {
         return this.$store.state.currentSelectedData[0] || [];
-      } else {
-        return []
-      }
+      } 
+      return [];
+      
     },
     geocodeProperties() {
       if (this.$store.state.geocode.data) {
         if (this.$store.state.geocode.data.properties) {
           return this.$store.state.geocode.data.properties;
-        } else {
-          return {};
-        }
-      } else {
+        } 
         return {};
-      }
+        
+      } 
+      return {};
+      
     },
     opaData() {
       if (this.$store.state.sources.opa.data) {
         return this.$store.state.sources.opa.data;
-      } else {
-        return {}
-      }
+      } 
+      return {};
+      
     },
     zoning() {
       return helpers.ZONING_CODE_MAP[this.geocodeProperties.zoning];
@@ -82,7 +81,7 @@ export default {
         owners = '';
       }
       return owners;
-    }
+    },
   },
   watch: {
     selectedResources(nextSelectedResources) {

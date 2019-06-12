@@ -53,7 +53,7 @@ function createStore(config) {
       },
       setCurrentSelectedData(state, payload) {
         state.currentSelectedData = payload;
-      }
+      },
     },
     actions: {
 
