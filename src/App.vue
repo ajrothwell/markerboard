@@ -136,10 +136,10 @@ export default {
       return this.$store.state.selectedServices;
     },
     dataStatus() {
-      return this.$store.state.markerSources[this.$appType].status;
+      return this.$store.state.pinSources[this.$appType].status;
     },
     database() {
-      return this.$store.state.markerSources[this.$appType].data;
+      return this.$store.state.pinSources[this.$appType].data;
     },
     shouldLoadCyclomediaWidget() {
       return this.$config.cyclomedia.enabled && !this.isMobileOrTablet;
@@ -182,12 +182,12 @@ export default {
     //   this.filterPoints();
     // },
     // selectedServices() {
-    //   if (this.$store.state.markerSources[this.$appType].data) {
+    //   if (this.$store.state.pinSources[this.$appType].data) {
     //     this.filterPoints();
     //   }
     // },
     // selectedKeywords() {
-    //   if (this.$store.state.markerSources[this.$appType].data) {
+    //   if (this.$store.state.pinSources[this.$appType].data) {
     //     this.filterPoints();
     //   }
     // },
@@ -199,8 +199,8 @@ export default {
   },
   mounted() {
     console.log('in App.vue mounted, this.$config:', this.$config);
-    if (this.$config.markerSources) {
-      this.$controller.dataManager.fetchData('markers');
+    if (this.$config.pinSources) {
+      this.$controller.dataManager.fetchData('pins');
     }
     this.$controller.appDidLoad();
     this.onResize();
@@ -215,8 +215,8 @@ export default {
   methods: {
     init() {
       console.log('in App.vue mounted, this.$config:', this.$config);
-      if (this.$config.markerSources) {
-        this.$controller.dataManager.fetchData('markers');
+      if (this.$config.pinSources) {
+        this.$controller.dataManager.fetchData('pins');
       }
       this.onResize();
     },

@@ -6,11 +6,11 @@
 // if that is not needed, we can move this info to main.js
 
 // data-sources
-import sheriffSales from './marker-sources/sheriff-sales';
+import sheriffSales from './pin-sources/sheriff-sales';
 import opa from './data-sources/opa';
 
 export default {
-  markerSources: {
+  pinSources: {
     sheriffSales,
   },
   router: {

@@ -96,7 +96,7 @@ export default {
     PropertyCard,
   },
   computed: {
-    ...mapState([ 'markerSources' ]),
+    ...mapState([ 'pinSources' ]),
     currentData() {
       const locations = this.$store.state.currentData;
       // locations.sort((a, b) => a.organization_name.localeCompare(b.organization_name));
@@ -114,7 +114,7 @@ export default {
     //   return currentData;
     // },
     dataStatus() {
-      return this.$store.state.markerSources[this.$appType].status;
+      return this.$store.state.pinSources[this.$appType].status;
     },
   },
   methods: {

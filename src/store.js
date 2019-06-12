@@ -13,12 +13,12 @@ Vue.use(Vuex);
 
 function createStore(config) {
   const sources = pvdStore.createSources(config);
-  const markerSources = pvdStore.createMarkerSources(config);
+  const pinSources = pvdStore.createPinSources(config);
   const parcels = pvdStore.createParcels(config);
   const rfStore = {
     state: {
       sources,
-      markerSources,
+      pinSources,
       parcels,
       map: {
         center: [ -75.163471, 39.953338 ],
