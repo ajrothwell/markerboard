@@ -1,1 +1,1 @@
-# resource-finder
+# pinboard
