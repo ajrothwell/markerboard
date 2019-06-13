@@ -1,50 +1,103 @@
-import Vue from 'vue';
-import controllerMixin from '@philly/vue-datafetch/src/controller/index';
-/* eslint-disable import/no-extraneous-dependencies */
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import fonts from './fa';
+// this is the base-config for resource-finder
+// the point of this file is that it will move outside the project
+// (so that settings we put in it can be used by other projects)
+// and be pulled in with an axios call or something
+// (we might not need to use axios with new vue async tools)
+// if that is not needed, we can move this info to main.js
 
-import App from './App.vue';
-import router from './router';
-import createStore from './store';
+import pinboard from './function.js';
 
-// importing util helpers for creating the config
-// and making it available to all components as "this.$config"
-import mergeDeep from './util/merge-deep';
-import configMixin from './util/config-mixin';
-
-
-// baseConfig is right now coming in from within the project
-// if we definitely need one, we can move it outside the project
-// and do an axios call to get it
-import baseConfig from './config';
+// data-sources
+import sheriffSales from './pin-sources/sheriff-sales';
+import opa from './data-sources/opa';
+var BASE_CONFIG_URL = 'https://cdn.jsdelivr.net/gh/cityofphiladelphia/mapboard-default-base-config@d3ad38f050cf55b4ab0dc2ff68e6f18025690246/config.js';
 
 
-// any config specific to this project only can go here
-const clientConfig = {
-  // map: '',
-};
-
-
-// if there is a baseConfig, it is merged with the clientConfig here
-// in the parameters of mergeDeep, whichever one comes second
-// will have overwrite power over the first
-const config = mergeDeep(baseConfig, clientConfig);
-
-const store = createStore(config);
-
-Vue.use(controllerMixin, { config, store });
-Vue.use(configMixin, config);
-Vue.use(fonts);
-Vue.component('font-awesome-icon', FontAwesomeIcon);
-
-Vue.config.productionTip = false;
-
-/* Change this depending on value in $store.state.sources */
-Vue.prototype.$appType = 'sheriffSales';
-
-new Vue({
-  router,
-  store,
-  render: h => h(App),
-}).$mount('#app');
+pinboard({
+  baseConfig: BASE_CONFIG_URL,
+  pinSources: {
+    sheriffSales,
+  },
+  router: {
+    enabled: false,
+  },
+  selectedMarkers: {
+    max: 1,
+  },
+  dataSources: {
+    opa,
+  },
+  app: {
+    title: 'Sheriff Sale Properties',
+    tagLine: 'Find properties for sale',
+  },
+  geocoder: {
+    url(input) {
+      const inputEncoded = encodeURIComponent(input);
+      return `//api.phila.gov/ais/v1/search/${inputEncoded}`;
+    },
+    params: {
+      gatekeeperKey: process.env.VUE_APP_GATEKEEPER_KEY,
+      include_units: true,
+    },
+  },
+  parcels: {
+    pwd: {
+      multipleAllowed: false,
+      geocodeFailAttemptParcel: null,
+      clearStateOnError: false,
+      wipeOutOtherParcelsOnReverseGeocodeOnly: true,
+      geocodeField: 'PARCELID',
+      parcelIdInGeocoder: 'pwd_parcel_id',
+      getByLatLngIfIdFails: false,
+    },
+    dor: {
+      multipleAllowed: true,
+      geocodeFailAttemptParcel: 'pwd',
+      clearStateOnError: true,
+      wipeOutOtherParcelsOnReverseGeocodeOnly: false,
+      geocodeField: 'MAPREG',
+      parcelIdInGeocoder: 'dor_parcel_id',
+      getByLatLngIfIdFails: true,
+    },
+  },
+  cyclomedia: {
+    enabled: true,
+    measurementAllowed: false,
+    popoutAble: true,
+    recordingsUrl: 'https://atlas.cyclomedia.com/Recordings/wfs',
+    username: process.env.VUE_APP_CYCLOMEDIA_USERNAME,
+    password: process.env.VUE_APP_CYCLOMEDIA_PASSWORD,
+    apiKey: process.env.VUE_APP_CYCLOMEDIA_API_KEY,
+  },
+  map: {
+    center: [ -75.163471, 39.953338 ],
+    zoom: 12,
+    geocodeZoom: 15,
+    basemaps: {
+      pwd: {
+        url: '//tiles.arcgis.com/tiles/fLeGjb7u4uXqeF9q/arcgis/rest/services/CityBasemap/MapServer',
+        tiledLayers: [
+          'cityBasemapLabels',
+        ],
+        type: 'featuremap',
+        attribution: 'Parcels: Philadelphia Water',
+      },
+    },
+    tiledLayers: {
+      cityBasemapLabels: {
+        url: '//tiles.arcgis.com/tiles/fLeGjb7u4uXqeF9q/arcgis/rest/services/CityBasemap_Labels/MapServer',
+        zIndex: '3',
+      },
+    },
+    featureLayers: {
+      dorParcels: {
+        url: '//services.arcgis.com/fLeGjb7u4uXqeF9q/ArcGIS/rest/services/DOR_Parcel/FeatureServer/0',
+      },
+      pwdParcels: {
+        url: '//services.arcgis.com/fLeGjb7u4uXqeF9q/ArcGIS/rest/services/PWD_PARCELS/FeatureServer/0',
+        // url: '//gis.phila.gov/arcgis/rest/services/Water/pv_data_geodb2/MapServer/0',
+      },
+    },
+  },
+});

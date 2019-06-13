@@ -11,8 +11,17 @@
       @l-moveend="handleMapMove"
     >
       <!-- @l-click="handleMapClick" -->
+
+      <div v-show="isLoadingPins" class="mb-map-loading-mask">
+        <div class="mb-map-loading-mask-inner">
+          <i class="fa fa-spinner fa-4x spin"></i>
+          <h1>Finding map data...</h1>
+        </div>
+      </div>
+
       <esri-tiled-map-layer
         v-for="(basemap, key) in this.$config.map.basemaps"
+        v-if="activeBasemap === key"
         :key="key"
         :url="basemap.url"
       />
@@ -20,6 +29,7 @@
       <!-- basemap labels and parcels outlines -->
       <esri-tiled-map-layer
         v-for="(tiledLayer, key) in this.$config.map.tiledLayers"
+        v-if="tiledLayers.includes(key)"
         :key="key"
         :url="tiledLayer.url"
         :z-index="tiledLayer.zIndex"
@@ -63,6 +73,28 @@
         :h-fov="cycloHFov"
       />
 
+      <!-- basemap control -->
+      <control-corner :vSide="'top'"
+                      :hSide="'almostright'"
+      >
+      </control-corner>
+
+      <control-corner :vSide="'top'"
+                      :hSide="'almostleft'"
+      >
+      </control-corner>
+
+      <div v-once>
+        <basemap-toggle-control v-if="shouldShowBasemapToggleControl"
+                                v-once
+                                :position="'topright'"
+        />
+      </div>
+
+      <div v-once>
+        <basemap-select-control :position="this.basemapSelectControlPosition" />
+      </div>
+
       <div v-once>
         <cyclomedia-button
           v-if="shouldShowCyclomediaButton"
@@ -105,6 +137,10 @@ import cyclomediaMixin from '@philly/vue-mapping/src/cyclomedia/map-panel-mixin.
 
 import CyclomediaButton from '@philly/vue-mapping/src/cyclomedia/Button.vue';
 import CyclomediaRecordingsClient from '@philly/vue-mapping/src/cyclomedia/recordings-client.js';
+import ControlCorner from '@philly/vue-mapping/src/leaflet/ControlCorner.vue';
+import BasemapToggleControl from '@philly/vue-mapping/src/components/BasemapToggleControl.vue';
+import BasemapSelectControl from '@philly/vue-mapping/src/components/BasemapSelectControl.vue';
+
 
 export default {
   name: 'MapPanel',
@@ -117,6 +153,9 @@ export default {
     SvgViewConeMarker: () => import(/* webpackChunkName: "mbmp_pvm_CyclomediaSvgViewConeMarker" */'@philly/vue-mapping/src/cyclomedia/SvgViewConeMarker.vue'),
     CyclomediaButton,
     CyclomediaRecordingsClient,
+    ControlCorner,
+    BasemapToggleControl,
+    BasemapSelectControl,
   },
   mixins: [
     cyclomediaMixin,
@@ -128,6 +167,9 @@ export default {
     return data;
   },
   computed: {
+    isLoadingPins() {
+      return this.$store.state.pinSources[this.$appType].status === 'waiting';
+    },
     selectedResources() {
       return this.$store.state.selectedResources;
     },
@@ -202,10 +244,10 @@ export default {
       if (this.$store.state.cyclomedia.orientation.xyz !== null) {
         const xyz = this.$store.state.cyclomedia.orientation.xyz;
         return [ xyz[1], xyz[0] ];
-      } 
+      }
       const center = this.$config.map.center;
       return center;
-      
+
     },
     cycloRotationAngle() {
       return this.$store.state.cyclomedia.orientation.yaw * (180/3.14159265359);
@@ -219,16 +261,53 @@ export default {
     picOrCycloActive() {
       if (this.cyclomediaActive || this.pictometryActive) {
         return true;
-      } 
+      }
       return false;
-      
+
+    },
+    activeBasemap() {
+      const shouldShowBasemapSelectControl = this.$store.state.map.shouldShowBasemapSelectControl;
+      if (shouldShowBasemapSelectControl) {
+        return this.$store.state.map.imagery;
+      }
+      const defaultBasemap = this.$config.map.defaultBasemap;
+      const basemap = this.$store.state.map.basemap || defaultBasemap;
+      return basemap;
+    },
+    tiledLayers() {
+      const activeBasemap = this.activeBasemap;
+      const activeBasemapConfig = this.configForBasemap(activeBasemap)
+      return activeBasemapConfig.tiledLayers || [];
+    },
+    basemapSelectControlPosition() {
+      if (this.isMobileOrTablet) {
+        return 'topright'
+      } else {
+        return 'topalmostright'
+      }
+    },
+    basemaps() {
+      return Object.values(this.$config.map.basemaps);
+    },
+    imageryBasemaps() {
+      return this.basemaps.filter(basemap => basemap.type === 'imagery');
+    },
+    hasImageryBasemaps() {
+      return this.imageryBasemaps.length > 0;
+    },
+    shouldShowBasemapToggleControl() {
+      if (this.$config.map.imagery) {
+        return this.hasImageryBasemaps && this.$config.map.imagery.enabled;
+      } else {
+        return this.hasImageryBasemaps;
+      }
     },
     sitePath() {
       if (process.env.VUE_APP_PUBLICPATH) {
         return window.location.origin + process.env.VUE_APP_PUBLICPATH;
-      } 
+      }
       return '';
-      
+
     },
   },
   watch: {
@@ -272,6 +351,9 @@ export default {
     // handleMapClick() {
     //   console.log('mapClick!');
     // },
+    configForBasemap(basemap) {
+      return this.$config.map.basemaps[basemap] || {};
+    },
     handleMarkerClick(e) {
       const { target } = e;
       const { featureId } = target.options.data;
@@ -333,5 +415,23 @@ export default {
 
 .mb-map-with-widget {
   height: 50%;
+}
+
+.mb-map-loading-mask {
+  /*display: inline;*/
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  background: rgba(0, 0 ,0 , 0.25);
+  z-index: 1000;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.mb-map-loading-mask-inner {
+  position: absolute;
+  top: 40%;
+  left: 40%;
 }
 </style>
