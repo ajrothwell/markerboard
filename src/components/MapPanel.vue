@@ -50,7 +50,7 @@
         :latlng="marker.latlng"
         :marker-color="marker.color"
         :icon="marker.icon"
-        :-feature-id="marker._featureId"
+        :feature-id="marker._featureId"
         :data="{
           featureId: marker._featureId
         }"

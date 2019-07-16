@@ -10,7 +10,8 @@ import pinboard from './function.js';
 // data-sources
 import sheriffSales from './pin-sources/sheriff-sales';
 import opa from './data-sources/opa';
-var BASE_CONFIG_URL = 'https://cdn.jsdelivr.net/gh/cityofphiladelphia/mapboard-default-base-config@d3ad38f050cf55b4ab0dc2ff68e6f18025690246/config.js';
+var BASE_CONFIG_URL = 'https://cdn.jsdelivr.net/gh/cityofphiladelphia/mapboard-default-base-config@6126861722cee9384694742363d1661e771493b9/config.js';
+// var BASE_CONFIG_URL = 'https://cdn.jsdelivr.net/gh/cityofphiladelphia/mapboard-default-base-config@d3ad38f050cf55b4ab0dc2ff68e6f18025690246/config.js';
 
 
 pinboard({
@@ -76,7 +77,7 @@ pinboard({
     geocodeZoom: 15,
     basemaps: {
       pwd: {
-        url: '//tiles.arcgis.com/tiles/fLeGjb7u4uXqeF9q/arcgis/rest/services/CityBasemap/MapServer',
+        url: 'https://tiles.arcgis.com/tiles/fLeGjb7u4uXqeF9q/arcgis/rest/services/CityBasemap/MapServer',
         tiledLayers: [
           'cityBasemapLabels',
         ],
@@ -86,16 +87,16 @@ pinboard({
     },
     tiledLayers: {
       cityBasemapLabels: {
-        url: '//tiles.arcgis.com/tiles/fLeGjb7u4uXqeF9q/arcgis/rest/services/CityBasemap_Labels/MapServer',
+        url: 'https://tiles.arcgis.com/tiles/fLeGjb7u4uXqeF9q/arcgis/rest/services/CityBasemap_Labels/MapServer',
         zIndex: '3',
       },
     },
     featureLayers: {
       dorParcels: {
-        url: '//services.arcgis.com/fLeGjb7u4uXqeF9q/ArcGIS/rest/services/DOR_Parcel/FeatureServer/0',
+        url: 'https://services.arcgis.com/fLeGjb7u4uXqeF9q/ArcGIS/rest/services/DOR_Parcel/FeatureServer/0',
       },
       pwdParcels: {
-        url: '//services.arcgis.com/fLeGjb7u4uXqeF9q/ArcGIS/rest/services/PWD_PARCELS/FeatureServer/0',
+        url: 'https://services.arcgis.com/fLeGjb7u4uXqeF9q/ArcGIS/rest/services/PWD_PARCELS/FeatureServer/0',
         // url: '//gis.phila.gov/arcgis/rest/services/Water/pv_data_geodb2/MapServer/0',
       },
     },
